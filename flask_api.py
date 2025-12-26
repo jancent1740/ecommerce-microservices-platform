@@ -5,6 +5,14 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+@app.route('/')
+def home():
+    return jsonify({
+        "message": "Flask API is running in Docker!",
+        "status": "success",
+        "version": "1.0"
+    })
+
 @app.route('/api/products')
 def get_products():
     response = requests.get('http://host.docker.internal:8000/api/products/')

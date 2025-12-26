@@ -1,0 +1,43 @@
+name: Docker CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build Docker image
+      run: |
+        docker build -t flask-api:latest .
+
+    - name: Run Docker container
+      run: |
+        docker run -d -p 5000:5000 --name flask-api-test flask-api:latest
+        sleep 10
+
+    - name: Test API health
+      run: |
+        curl -f http://localhost:5000/ || exit 1
+        echo "API is responding successfully!"
+
+    - name: Show container logs
+      if: always()
+      run: |
+        docker logs flask-api-test
+
+    - name: Cleanup
+      if: always()
+      run: |
+        docker stop flask-api-test || true
+        docker rm flask-api-test || true
